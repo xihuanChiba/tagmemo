@@ -1,0 +1,30 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+coverage/
+
+# Generated platform projects (recreated by scripts/bootstrap.*)
+/android/
+/windows/
+/linux/
+/macos/
+/ios/
+/web/
+
+# Editors
+.idea/
+.vscode/
+*.iml
+
+# Local cloud configuration
+config/*.json
+config/*.env
+!config/example.json
+
+# OS
+.DS_Store
+Thumbs.db

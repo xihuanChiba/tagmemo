@@ -1,0 +1,65 @@
+name: Build Android and Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate platform project
+        run: bash scripts/bootstrap.sh
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build APK
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: >-
+          flutter build apk --debug
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
+          --dart-define=OAUTH_REDIRECT_URL=tagmemo://login-callback
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tagmemo-android-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate platform project
+        shell: pwsh
+        run: ./scripts/bootstrap.ps1
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build Windows
+        shell: pwsh
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          flutter build windows --release --dart-define=SUPABASE_URL="$env:SUPABASE_URL" --dart-define=SUPABASE_PUBLISHABLE_KEY="$env:SUPABASE_PUBLISHABLE_KEY" --dart-define=OAUTH_REDIRECT_URL=tagmemo://login-callback
+          Copy-Item scripts/install_tagmemo.ps1 build/windows/x64/runner/Release/
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath tagmemo-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tagmemo-windows
+          path: tagmemo-windows.zip
