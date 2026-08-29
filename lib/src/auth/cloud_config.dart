@@ -16,7 +16,7 @@ class CloudConfig {
     if (!enabled) return;
     await Supabase.initialize(
       url: supabaseUrl,
-      anonKey: supabasePublishableKey,
+      publishableKey: supabasePublishableKey,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
