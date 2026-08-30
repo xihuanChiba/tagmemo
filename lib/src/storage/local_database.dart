@@ -30,7 +30,11 @@ class LocalDatabase {
       path,
       options: mobile.OpenDatabaseOptions(
         version: 1,
-        onConfigure: (db) => db.execute('PRAGMA journal_mode=WAL'),
+        // journal_mode returns a result row, so Android sqflite requires a
+        // query method rather than execute().
+        onConfigure: (db) async {
+          await db.rawQuery('PRAGMA journal_mode=WAL');
+        },
         onCreate: (db, version) async {
           await db.execute('''
           CREATE TABLE notes (
