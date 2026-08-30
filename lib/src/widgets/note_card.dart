@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../markdown/markdown_tools.dart';
 import '../models/note.dart';
 
 class NoteCard extends StatelessWidget {
@@ -17,6 +19,7 @@ class NoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = Color(note.colorValue);
+    final summary = markdownSummary(note.body);
     final foreground =
         ThemeData.estimateBrightnessForColor(background) == Brightness.dark
             ? Colors.white
@@ -65,10 +68,10 @@ class NoteCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (note.body.isNotEmpty) ...[
+              if (summary.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
-                  note.body,
+                  summary,
                   maxLines: 8,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: foreground, height: 1.35),
@@ -101,6 +104,14 @@ class NoteCard extends StatelessWidget {
                       .toList(),
                 ),
               ],
+              const SizedBox(height: 10),
+              Text(
+                '更新 ${DateFormat('M/d HH:mm').format(note.updatedAt)}',
+                style: TextStyle(
+                  color: foreground.withValues(alpha: 0.65),
+                  fontSize: 11,
+                ),
+              ),
             ],
           ),
         ),

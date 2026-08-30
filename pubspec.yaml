@@ -1,7 +1,7 @@
 name: tagmemo
 description: Offline-first memo app for Android and Windows.
 publish_to: "none"
-version: 0.1.2+3
+version: 0.2.0+4
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_markdown: ^0.7.7+1
   intl: ^0.20.2
   path: ^1.9.1
   path_provider: ^2.1.5

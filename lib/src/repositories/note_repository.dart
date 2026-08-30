@@ -105,17 +105,26 @@ class NoteRepository extends ChangeNotifier {
       return null;
     }
     final now = DateTime.now();
+    final normalizedTitle = title.trim();
+    final normalizedBody = body.trim();
     final normalizedLabels = labels
         .map((label) => label.trim())
         .where((label) => label.isNotEmpty)
         .toSet()
         .toList()
       ..sort();
+    final hasChanges = original == null ||
+        original.title != normalizedTitle ||
+        original.body != normalizedBody ||
+        !listEquals(original.labels, normalizedLabels) ||
+        original.colorValue != colorValue ||
+        original.isPinned != isPinned ||
+        original.isArchived != isArchived;
     final note = original == null
         ? Note(
             id: _uuid.v4(),
-            title: title.trim(),
-            body: body.trim(),
+            title: normalizedTitle,
+            body: normalizedBody,
             labels: normalizedLabels,
             colorValue: colorValue,
             isPinned: isPinned,
@@ -124,14 +133,14 @@ class NoteRepository extends ChangeNotifier {
             updatedAt: now,
           )
         : original.copyWith(
-            title: title.trim(),
-            body: body.trim(),
+            title: normalizedTitle,
+            body: normalizedBody,
             labels: normalizedLabels,
             colorValue: colorValue,
             isPinned: isPinned,
             isArchived: isArchived,
-            updatedAt: now,
-            isDirty: true,
+            updatedAt: hasChanges ? now : original.updatedAt,
+            isDirty: hasChanges ? true : original.isDirty,
           );
     await _database.saveNote(note);
     await _reload();
