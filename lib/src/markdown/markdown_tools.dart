@@ -37,23 +37,29 @@ String setMarkdownTaskChecked(String source, int lineIndex, bool checked) {
 String markdownSummary(String source) {
   final lines = source.split('\n').map((line) {
     final task = parseMarkdownTaskLine(line);
-    if (task != null) return '${task.checked ? '☑' : '☐'} ${task.text}';
+    if (task != null) {
+      return '${task.checked ? '☑' : '☐'} ${_stripInlineMarkdown(task.text)}';
+    }
 
     var result = line
         .replaceFirst(RegExp(r'^\s*#{1,6}\s+'), '')
         .replaceFirst(RegExp(r'^\s*>\s?'), '')
         .replaceFirst(RegExp(r'^\s*[-*+]\s+'), '• ')
         .replaceFirst(RegExp(r'^\s*\d+[.)]\s+'), '');
-    result = result.replaceAllMapped(
-      RegExp(r'!\[([^\]]*)\]\([^)]+\)'),
-      (match) => match.group(1)!,
-    );
-    result = result.replaceAllMapped(
-      RegExp(r'\[([^\]]+)\]\([^)]+\)'),
-      (match) => match.group(1)!,
-    );
-    return result.replaceAll(RegExp(r'[*_`~]'), '');
+    return _stripInlineMarkdown(result);
   }).join('\n');
 
   return lines.replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+}
+
+String _stripInlineMarkdown(String source) {
+  var result = source.replaceAllMapped(
+    RegExp(r'!\[([^\]]*)\]\([^)]+\)'),
+    (match) => match.group(1)!,
+  );
+  result = result.replaceAllMapped(
+    RegExp(r'\[([^\]]+)\]\([^)]+\)'),
+    (match) => match.group(1)!,
+  );
+  return result.replaceAll(RegExp(r'[*_`~]'), '');
 }
