@@ -2,30 +2,37 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart' as mobile;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 
 import '../models/note.dart';
 
 class LocalDatabase {
-  Database? _database;
+  mobile.Database? _database;
 
-  Future<Database> get database async {
+  Future<mobile.Database> get database async {
     if (_database != null) return _database!;
 
+    final mobile.DatabaseFactory factory;
     if (Platform.isWindows || Platform.isLinux) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+      ffi.sqfliteFfiInit();
+      factory = ffi.databaseFactoryFfi;
+    } else {
+      // Android/iOS must use the native sqflite plugin. The FFI factory is
+      // desktop-only and is not initialized on Android.
+      factory = mobile.databaseFactory;
     }
 
     final directory = await getApplicationSupportDirectory();
     await directory.create(recursive: true);
     final path = p.join(directory.path, 'tagmemo.db');
-    _database = await openDatabase(
+    _database = await factory.openDatabase(
       path,
-      version: 1,
-      onConfigure: (db) => db.execute('PRAGMA journal_mode=WAL'),
-      onCreate: (db, version) async {
-        await db.execute('''
+      options: mobile.OpenDatabaseOptions(
+        version: 1,
+        onConfigure: (db) => db.execute('PRAGMA journal_mode=WAL'),
+        onCreate: (db, version) async {
+          await db.execute('''
           CREATE TABLE notes (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
@@ -40,16 +47,17 @@ class LocalDatabase {
             is_dirty INTEGER NOT NULL DEFAULT 1
           )
         ''');
-        await db.execute(
-          'CREATE INDEX notes_updated_at_idx ON notes(updated_at)',
-        );
-        await db.execute('''
+          await db.execute(
+            'CREATE INDEX notes_updated_at_idx ON notes(updated_at)',
+          );
+          await db.execute('''
           CREATE TABLE settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
           )
         ''');
-      },
+        },
+      ),
     );
     return _database!;
   }
@@ -75,7 +83,7 @@ class LocalDatabase {
     await db.insert(
       'notes',
       note.toDatabaseMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: mobile.ConflictAlgorithm.replace,
     );
   }
 
@@ -125,7 +133,7 @@ class LocalDatabase {
     await db.insert(
       'settings',
       {'key': 'last_sync_millis', 'value': value.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: mobile.ConflictAlgorithm.replace,
     );
   }
 }
