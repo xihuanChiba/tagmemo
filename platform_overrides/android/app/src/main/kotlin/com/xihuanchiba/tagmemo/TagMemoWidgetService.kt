@@ -2,6 +2,7 @@ package com.xihuanchiba.tagmemo
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
@@ -10,15 +11,26 @@ import org.json.JSONObject
 
 class TagMemoWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
-        return NotesFactory(applicationContext, intent.getStringExtra("filter") ?: "all")
+        return NotesFactory(
+            applicationContext,
+            intent.getStringExtra("filter") ?: "all",
+            intent.getIntExtra("transparency", 0),
+        )
     }
 }
 
 private class NotesFactory(
     private val context: Context,
     private val filter: String,
+    transparency: Int,
 ) : RemoteViewsService.RemoteViewsFactory {
     private var notes: List<JSONObject> = emptyList()
+    private val backgroundAlpha = when (transparency) {
+        25 -> 191
+        50 -> 128
+        75 -> 64
+        else -> 255
+    }
 
     override fun onCreate() = Unit
 
@@ -61,7 +73,14 @@ private class NotesFactory(
         return RemoteViews(context.packageName, R.layout.tagmemo_widget_item).apply {
             setTextViewText(R.id.widget_item_title, title)
             setTextViewText(R.id.widget_item_body, body)
-            setInt(R.id.widget_item_root, "setBackgroundColor", note.optInt("color", 0xFFFFF8B8.toInt()))
+            val noteColor = note.optInt("color", 0xFFFFF8B8.toInt())
+            val transparentColor = Color.argb(
+                backgroundAlpha,
+                Color.red(noteColor),
+                Color.green(noteColor),
+                Color.blue(noteColor),
+            )
+            setInt(R.id.widget_item_root, "setBackgroundColor", transparentColor)
             val fillIn = Intent().apply {
                 data = Uri.parse("tagmemo://note/${note.optString("id")}")
             }

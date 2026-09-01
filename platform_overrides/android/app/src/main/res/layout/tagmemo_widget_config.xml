@@ -18,10 +18,31 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="背景の透過度"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="文字は透過せず、読みやすさを保ちます"
+        android:textSize="13sp" />
+
+    <Spinner
+        android:id="@+id/widget_transparency_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
     <Button
         android:id="@+id/widget_save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="28dp"
         android:text="設定する" />
 </LinearLayout>

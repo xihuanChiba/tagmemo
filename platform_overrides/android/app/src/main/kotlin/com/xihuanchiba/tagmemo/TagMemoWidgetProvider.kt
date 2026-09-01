@@ -19,7 +19,10 @@ class TagMemoWidgetProvider : AppWidgetProvider() {
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         val editor = context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE).edit()
-        appWidgetIds.forEach { editor.remove("filter_$it") }
+        appWidgetIds.forEach {
+            editor.remove("filter_$it")
+            editor.remove("transparency_$it")
+        }
         editor.apply()
     }
 
@@ -27,16 +30,25 @@ class TagMemoWidgetProvider : AppWidgetProvider() {
         fun update(context: Context, manager: AppWidgetManager, widgetId: Int) {
             val prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
             val filter = prefs.getString("filter_$widgetId", "all") ?: "all"
+            val transparency = prefs.getInt("transparency_$widgetId", 0)
             val title = when {
                 filter == "pinned" -> "固定したメモ"
                 filter.startsWith("label:") -> filter.removePrefix("label:")
                 else -> "すべてのメモ"
             }
             val views = RemoteViews(context.packageName, R.layout.tagmemo_widget).apply {
+                val background = when (transparency) {
+                    25 -> R.drawable.widget_background_25
+                    50 -> R.drawable.widget_background_50
+                    75 -> R.drawable.widget_background_75
+                    else -> R.drawable.widget_background
+                }
+                setInt(R.id.widget_root, "setBackgroundResource", background)
                 setTextViewText(R.id.widget_title, title)
                 val serviceIntent = Intent(context, TagMemoWidgetService::class.java).apply {
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                     putExtra("filter", filter)
+                    putExtra("transparency", transparency)
                     data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
                 }
                 setRemoteAdapter(R.id.widget_list, serviceIntent)

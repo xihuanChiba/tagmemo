@@ -37,8 +37,35 @@ class TagMemoWidgetConfigActivity : Activity() {
 
         val spinner = findViewById<Spinner>(R.id.widget_filter_spinner)
         spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, display)
+        val savedFilter = prefs.getString("filter_$widgetId", "all") ?: "all"
+        spinner.setSelection(values.indexOf(savedFilter).coerceAtLeast(0))
+
+        val transparencyDisplay = listOf(
+            "透過なし（0%）",
+            "少し透過（25%）",
+            "半透明（50%）",
+            "高透過（75%）",
+        )
+        val transparencyValues = listOf(0, 25, 50, 75)
+        val transparencySpinner = findViewById<Spinner>(R.id.widget_transparency_spinner)
+        transparencySpinner.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            transparencyDisplay,
+        )
+        val savedTransparency = prefs.getInt("transparency_$widgetId", 0)
+        transparencySpinner.setSelection(
+            transparencyValues.indexOf(savedTransparency).coerceAtLeast(0),
+        )
+
         findViewById<Button>(R.id.widget_save_button).setOnClickListener {
-            prefs.edit().putString("filter_$widgetId", values[spinner.selectedItemPosition]).apply()
+            prefs.edit()
+                .putString("filter_$widgetId", values[spinner.selectedItemPosition])
+                .putInt(
+                    "transparency_$widgetId",
+                    transparencyValues[transparencySpinner.selectedItemPosition],
+                )
+                .apply()
             TagMemoWidgetProvider.update(this, AppWidgetManager.getInstance(this), widgetId)
             setResult(
                 RESULT_OK,

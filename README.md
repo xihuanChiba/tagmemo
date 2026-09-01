@@ -15,6 +15,7 @@ Google Keepの軽快さを参考にした、Android / Windows向けのオフラ�
   - すべてのメモ
   - 固定したメモ
   - 指定ラベルのメモ
+  - 背景透過度を0%・25%・50%・75%から選択
 - Android APK / Windows ZIPのGitHub Actionsビルド
 
 ## 仕組み

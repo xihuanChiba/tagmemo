@@ -1,7 +1,7 @@
 name: tagmemo
 description: Offline-first memo app for Android and Windows.
 publish_to: "none"
-version: 0.2.1+5
+version: 0.2.2+6
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
